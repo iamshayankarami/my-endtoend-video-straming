@@ -1,19 +1,28 @@
 package main
 
 import (
-	"fmt"
-	//"os"
 	"net/http"
-	"io/ioutil"
-	//"net"
-		)
+	"html/template"
+)
 
-func return_handel(in http.ResponseWriter, o *http.Request) {
-		return_file, _ := ioutil.ReadFile("index.html")
-		fmt.Fprint(in, string(return_file))
+type get_form struct {
+	username string
+	password string
 }
 
 func main() {
-	http.HandleFunc("/", return_handel)
-	http.ListenAndServe(":8000", nil)
+	tmpl := template.Must(template.ParseFiles("index.html"))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			tmpl.Execute(w, nil)
+			return
+		}
+		det := get_form{
+			username: r.FormValue("username"),
+			password: r.FormValue("password"),
+		}
+		_ = det
+		tmpl.Execute(w, "welcome")
+	})
+	http.ListenAndServe(":8080", nil)
 }
